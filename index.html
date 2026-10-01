@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabungan Pinda</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body class="bg-rose-50 text-slate-800 min-h-screen pb-12">
+
+    <!-- Header / Navbar -->
+    <header class="bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/20 p-2 rounded-full flex items-center justify-center w-10 h-10">
+                    <i class="fa-solid font-bold fa-heart text-xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">Tabungan Pinki & Anda</h1>
+                    <p class="text-xs text-rose-100">Menuju Masa Depan Ceria</p>
+                </div>
+            </div>
+            <button onclick="openModal('modalTarget')" class="bg-white/20 hover:bg-white/30 text-white text-xs md:text-sm px-3 py-2 rounded-lg transition flex items-center gap-2">
+                <i class="fa-solid fa-bullseye"></i> <span class="hidden sm:inline">Set Target Utama</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-6xl mx-auto px-4 mt-6 space-y-6">
+
+        <!-- Banner Ringkasan Saldo & Info -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Card Total Saldo -->
+            <div class="bg-gradient-to-br from-rose-500 to-pink-600 text-white rounded-2xl p-5 shadow-lg relative overflow-hidden">
+                <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+                <p class="text-rose-100 text-sm font-medium">Total Tabungan Bersama</p>
+                <h2 id="totalSaldo" class="text-3xl font-extrabold mt-2">Rp 0</h2>
+                <div class="mt-4 pt-3 border-t border-white/20 flex justify-between items-center text-xs text-rose-100">
+                    <span>Status Keuangan: <strong class="text-white">Aman</strong></span>
+                    <i class="fa-solid fa-shield-heart text-sm"></i>
+                </div>
+            </div>
+
+            <!-- Card Total Uang Masuk -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-emerald-100 flex flex-col justify-between">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-slate-500 text-sm font-medium">Total Uang Masuk</p>
+                        <h3 id="totalMasuk" class="text-2xl font-bold text-emerald-600 mt-1">Rp 0</h3>
+                    </div>
+                    <div class="bg-emerald-100 text-emerald-600 p-3 rounded-xl">
+                        <i class="fa-solid fa-arrow-down-left text-lg"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400 mt-2">Akumulasi seluruh pemasukan</p>
+            </div>
+
+            <!-- Card Total Uang Keluar -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-rose-100 flex flex-col justify-between">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-slate-500 text-sm font-medium">Total Uang Keluar</p>
+                        <h3 id="totalKeluar" class="text-2xl font-bold text-rose-600 mt-1">Rp 0</h3>
+                    </div>
+                    <div class="bg-rose-100 text-rose-600 p-3 rounded-xl">
+                        <i class="fa-solid fa-arrow-up-right text-lg"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-400 mt-2">Akumulasi pengeluaran bersama</p>
+            </div>
+        </div>
+
+        <!-- Progress Target Impian -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-rose-100">
+            <div class="flex justify-between items-center mb-2">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-ring text-rose-500"></i>
+                    <h3 class="font-semibold text-slate-700">Target Utama: <span id="targetNama" class="text-rose-600 font-bold">Biaya Pernikahan</span></h3>
+                </div>
+                <span id="targetPersen" class="text-sm font-bold text-rose-600">0%</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                <div id="targetBar" class="bg-gradient-to-r from-pink-500 to-rose-500 h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <div class="flex justify-between items-center text-xs text-slate-500 mt-2">
+                <span>Terkumpul: <strong id="targetTerkumpul" class="text-slate-700">Rp 0</strong></span>
+                <span>Target: <strong id="targetNominal" class="text-slate-700">Rp 50.000.000</strong></span>
+            </div>
+        </div>
+
+        <!-- Tombol Aksi Cepat (Tambah Transaksi) -->
+        <div class="grid grid-cols-2 gap-4">
+            <button onclick="openModal('modalMasuk')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-4 rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-circle-plus"></i> Tambah Uang Masuk
+            </button>
+            <button onclick="openModal('modalKeluar')" class="bg-rose-600 hover:bg-rose-700 text-white font-medium py-3 px-4 rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-circle-minus"></i> Tambah Uang Keluar
+            </button>
+        </div>
+
+        <!-- Section Grafik & Ringkasan Kontribusi -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Grafik Pemasukan vs Pengeluaran -->
+            <div class="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-rose-100">
+                <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line text-rose-500"></i> Grafik Keuangan
+                </h3>
+                <div class="h-64 relative">
+                    <canvas id="financeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Grafik Breakdown Kategori -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-rose-100">
+                <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-rose-500"></i> Kategori Pengeluaran
+                </h3>
+                <div class="h-64 relative flex items-center justify-center">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section Tabel Riwayat Transaksi -->
+        <div class="bg-white rounded-2xl p-5 shadow-sm border border-rose-100">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-rose-500"></i> Riwayat Transaksi
+                </h3>
+                <!-- Filter & Search -->
+                <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                    <input type="text" id="searchInput" oninput="renderData()" placeholder="Cari catatan..." class="text-xs border rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-rose-500 w-full sm:w-40">
+                    <select id="filterType" onchange="renderData()" class="text-xs border rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-rose-500">
+                        <option value="all">Semua Tipe</option>
+                        <option value="masuk">Uang Masuk</option>
+                        <option value="keluar">Uang Keluar</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs sm:text-sm">
+                    <thead>
+                        <tr class="bg-rose-50 text-slate-600 border-b">
+                            <th class="p-3">Tanggal</th>
+                            <th class="p-3">Oleh</th>
+                            <th class="p-3">Kategori</th>
+                            <th class="p-3">Keterangan</th>
+                            <th class="p-3 text-right">Jumlah</th>
+                            <th class="p-3 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionList" class="divide-y text-slate-700">
+                        <!-- Data transaksi dimasukkan lewat JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal Form Uang Masuk -->
+    <div id="modalMasuk" class="fixed inset-0 bg-black/40 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl relative animate-fade">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-circle-plus text-emerald-500"></i> Tambah Uang Masuk
+            </h3>
+            <form onsubmit="addTransaction(event, 'masuk')" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Pengisi / Kontributor</label>
+                    <select id="masukOleh" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <option value="Pinki">Pinki</option>
+                        <option value="Anda">Anda</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Jumlah (Rp)</label>
+                    <input type="number" id="masukJumlah" min="1" placeholder="Contoh: 1000000" required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Kategori</label>
+                    <select id="masukKategori" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <option value="Gaji & Bonus">Gaji & Bonus</option>
+                        <option value="Hasil Usaha">Hasil Usaha</option>
+                        <option value="Tabungan Rutin">Tabungan Rutin</option>
+                        <option value="Lainnya">Lainnya</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Keterangan</label>
+                    <input type="text" id="masukKet" placeholder="Catatan singkat..." required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal</label>
+                    <input type="date" id="masukTanggal" required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('modalMasuk')" class="px-4 py-2 text-xs font-medium text-slate-500 hover:bg-slate-100 rounded-lg">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-xs font-medium bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg">Simpan Uang Masuk</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Form Uang Keluar -->
+    <div id="modalKeluar" class="fixed inset-0 bg-black/40 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl relative animate-fade">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-circle-minus text-rose-500"></i> Tambah Uang Keluar
+            </h3>
+            <form onsubmit="addTransaction(event, 'keluar')" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Pengeluar / Oleh</label>
+                    <select id="keluarOleh" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                        <option value="Saya">Saya</option>
+                        <option value="Pasangan">Pasangan</option>
+                        <option value="Bersama">Bersama</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Jumlah (Rp)</label>
+                    <input type="number" id="keluarJumlah" min="1" placeholder="Contoh: 250000" required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Kategori</label>
+                    <select id="keluarKategori" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                        <option value="DP / DP Vendor">DP / DP Vendor</option>
+                        <option value="Investasi Impian">Investasi Impian</option>
+                        <option value="Kebutuhan Kencan">Kebutuhan Kencan</option>
+                        <option value="Lain-lain">Lain-lain</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Keterangan</label>
+                    <input type="text" id="keluarKet" placeholder="Catatan pengeluaran..." required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Tanggal</label>
+                    <input type="date" id="keluarTanggal" required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('modalKeluar')" class="px-4 py-2 text-xs font-medium text-slate-500 hover:bg-slate-100 rounded-lg">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-xs font-medium bg-rose-600 hover:bg-rose-700 text-white rounded-lg">Simpan Pengeluaran</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Target Impian -->
+    <div id="modalTarget" class="fixed inset-0 bg-black/40 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl relative animate-fade">
+            <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-bullseye text-rose-500"></i> Atur Target Utama
+            </h3>
+            <form onsubmit="saveTarget(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Target</label>
+                    <input type="text" id="inputNamaTarget" placeholder="Contoh: DP Rumah / Nikah" required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Target Nominal (Rp)</label>
+                    <input type="number" id="inputNominalTarget" min="1000" placeholder="Contoh: 50000000" required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-rose-500 outline-none">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('modalTarget')" class="px-4 py-2 text-xs font-medium text-slate-500 hover:bg-slate-100 rounded-lg">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-xs font-medium bg-rose-600 hover:bg-rose-700 text-white rounded-lg">Simpan Target</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script JavaScript Logic -->
+    <script>
+        // Inisialisasi Data Awal jika kosong
+        const defaultData = [
+            { id: 1, type: 'masuk', oleh: 'Saya', nominal: 2500000, kategori: 'Tabungan Rutin', ket: 'Tabungan Bulan Ini', tanggal: '2026-09-01' },
+            { id: 2, type: 'masuk', oleh: 'Pasangan', nominal: 2500000, kategori: 'Tabungan Rutin', ket: 'Tabungan Bulan Ini', tanggal: '2026-09-02' },
+            { id: 3, type: 'keluar', oleh: 'Bersama', nominal: 500000, kategori: 'DP / DP Vendor', ket: 'DP Gedung Serbaguna', tanggal: '2026-09-10' }
+        ];
+
+        let transactions = JSON.parse(localStorage.getItem('tb_transactions')) || defaultData;
+        let targetConfig = JSON.parse(localStorage.getItem('tb_target')) || { nama: 'Biaya Pernikahan', nominal: 50000000 };
+
+        let financeChart, categoryChart;
+
+        // Set tanggal default ke hari ini
+        document.getElementById('masukTanggal').valueAsDate = new Date();
+        document.getElementById('keluarTanggal').valueAsDate = new Date();
+
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+            document.getElementById(id).classList.add('flex');
+            if (id === 'modalTarget') {
+                document.getElementById('inputNamaTarget').value = targetConfig.nama;
+                document.getElementById('inputNominalTarget').value = targetConfig.nominal;
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+            document.getElementById(id).classList.remove('flex');
+        }
+
+        function saveData() {
+            localStorage.setItem('tb_transactions', JSON.stringify(transactions));
+            localStorage.setItem('tb_target', JSON.stringify(targetConfig));
+            renderData();
+        }
+
+        function addTransaction(e, type) {
+            e.preventDefault();
+            const oleh = document.getElementById(type + 'Oleh').value;
+            const nominal = parseFloat(document.getElementById(type + 'Jumlah').value);
+            const kategori = document.getElementById(type + 'Kategori').value;
+            const ket = document.getElementById(type + 'Ket').value;
+            const tanggal = document.getElementById(type + 'Tanggal').value;
+
+            const newTx = { id: Date.now(), type, oleh, nominal, kategori, ket, tanggal };
+            transactions.unshift(newTx);
+            saveData();
+            closeModal(type === 'masuk' ? 'modalMasuk' : 'modalKeluar');
+
+            // Reset input
+            document.getElementById(type + 'Jumlah').value = '';
+            document.getElementById(type + 'Ket').value = '';
+        }
+
+        function deleteTransaction(id) {
+            if (confirm('Yakin ingin menghapus transaksi ini?')) {
+                transactions = transactions.filter(t => t.id !== id);
+                saveData();
+            }
+        }
+
+        function saveTarget(e) {
+            e.preventDefault();
+            targetConfig.nama = document.getElementById('inputNamaTarget').value;
+            targetConfig.nominal = parseFloat(document.getElementById('inputNominalTarget').value);
+            saveData();
+            closeModal('modalTarget');
+        }
+
+        function renderData() {
+            const list = document.getElementById('transactionList');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const filterType = document.getElementById('filterType').value;
+
+            list.innerHTML = '';
+
+            let totalMasuk = 0;
+            let totalKeluar = 0;
+
+            const filtered = transactions.filter(t => {
+                const matchSearch = t.ket.toLowerCase().includes(search) || t.kategori.toLowerCase().includes(search);
+                const matchType = filterType === 'all' || t.type === filterType;
+                return matchSearch && matchType;
+            });
+
+            // Calculate totals
+            transactions.forEach(t => {
+                if (t.type === 'masuk') totalMasuk += t.nominal;
+                if (t.type === 'keluar') totalKeluar += t.nominal;
+            });
+
+            const totalSaldo = totalMasuk - totalKeluar;
+
+            // Render Ringkasan
+            document.getElementById('totalSaldo').innerText = formatRupiah(totalSaldo);
+            document.getElementById('totalMasuk').innerText = formatRupiah(totalMasuk);
+            document.getElementById('totalKeluar').innerText = formatRupiah(totalKeluar);
+
+            // Render Target Info
+            document.getElementById('targetNama').innerText = targetConfig.nama;
+            document.getElementById('targetNominal').innerText = formatRupiah(targetConfig.nominal);
+            document.getElementById('targetTerkumpul').innerText = formatRupiah(totalSaldo);
+            
+            const pct = Math.min(Math.round((totalSaldo / targetConfig.nominal) * 100), 100);
+            document.getElementById('targetPersen').innerText = (pct < 0 ? 0 : pct) + '%';
+            document.getElementById('targetBar').style.width = (pct < 0 ? 0 : pct) + '%';
+
+            // Render Table
+            if (filtered.length === 0) {
+                list.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada catatan transaksi.</td></tr>`;
+            } else {
+                filtered.forEach(t => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-rose-50/50 transition";
+                    const isMasuk = t.type === 'masuk';
+                    tr.innerHTML = `
+                        <td class="p-3 text-slate-500">${t.tanggal}</td>
+                        <td class="p-3"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-xs">${t.oleh}</span></td>
+                        <td class="p-3 font-medium">${t.kategori}</td>
+                        <td class="p-3 text-slate-600">${t.ket}</td>
+                        <td class="p-3 text-right font-bold ${isMasuk ? 'text-emerald-600' : 'text-rose-600'}">
+                            ${isMasuk ? '+' : '-'} ${formatRupiah(t.nominal)}
+                        </td>
+                        <td class="p-3 text-center">
+                            <button onclick="deleteTransaction(${t.id})" class="text-slate-400 hover:text-rose-600 transition">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    `;
+                    list.appendChild(tr);
+                });
+            }
+
+            renderCharts(totalMasuk, totalKeluar);
+        }
+
+        function renderCharts(totalMasuk, totalKeluar) {
+            // Chart 1: Bar Chart
+            const ctx1 = document.getElementById('financeChart').getContext('2d');
+            if (financeChart) financeChart.destroy();
+
+            financeChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Total Uang Masuk', 'Total Uang Keluar'],
+                    datasets: [{
+                        label: 'Rupiah',
+                        data: [totalMasuk, totalKeluar],
+                        backgroundColor: ['#10b981', '#f43f5e'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Chart 2: Pie Chart Kategori Keluar
+            const ctx2 = document.getElementById('categoryChart').getContext('2d');
+            if (categoryChart) categoryChart.destroy();
+
+            const catMap = {};
+            transactions.filter(t => t.type === 'keluar').forEach(t => {
+                catMap[t.kategori] = (catMap[t.kategori] || 0) + t.nominal;
+            });
+
+            const labels = Object.keys(catMap);
+            const data = Object.values(catMap);
+
+            categoryChart = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.length ? labels : ['Belum Ada Pengeluaran'],
+                    datasets: [{
+                        data: data.length ? data : [1],
+                        backgroundColor: ['#f43f5e', '#fb7185', '#fda4af', '#fecdd3', '#e2e8f0']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        // Run On Load
+        renderData();
+    </script>
+</body>
+</html>
